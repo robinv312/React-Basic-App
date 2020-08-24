@@ -1,82 +1,107 @@
 import React, { Component } from 'react';
 // import Radium,{ StyleRoot } from 'radium';
 // import styled from 'styled-components';
-import './App.css';
+import classes from './App.module.css';
 // import Person from '../components/Persons/Person/Person.js'
-import Persons from '../components/Persons/Persons'
-import Cockpit from '../components/Cockpit/Cockpit'
+import Persons from '../components/Persons/Persons';
+import Cockpit from '../components/Cockpit/Cockpit';
+import withClass from '../hoc/withClass';
+import Aux from '../hoc/Auxillary';
+import AuthContext from '../context/auth-context';
 
 
 
-class App extends Component{
+class App extends Component {
+
+  constructor(props) {
+    super(props);
+
+  }
   state = {
-    person : [
-      {id:'a',name:"Robin"},
-      {id:'b',name:"Gracy"},
-      {id:'c',name:"Varghese"}
+    person: [
+      { id: 'a', name: "Robin" },
+      { id: 'b', name: "Gracy" },
+      { id: 'c', name: "Varghese" }
     ],
-    showperson:false
+    showperson: false,
+    showcockpit: true,
+    changeCounter: 0,
+    authenticated: false
   }
 
-deletepersonHandler= (personindex)=>{
-  // const persons = this.state.person;
-  const persons=[...this.state.person]
-  persons.splice(personindex,1);
-  this.setState({
-    person:persons
-  });
-}
 
-namechangedHandler = (event,id)=>{
-  const personindex = this.state.person.findIndex(p=>{
-    return p.id===id;
-  });
-  const person = {...this.state.person[personindex]};
-  person.name= event.target.value
-  const persons = [...this.state.person];
-  persons[personindex] = person;
+  static getDerivedStateFromProps(props, state) {
+    return state;
+  }
 
+  // componentWillMount() {
 
+  // }
+  componentDidMount() {
+
+  }
+  componentDidUpdate() {
+    console.log('app js componenetdidupdate');
+  }
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log('app js shouldComponentUpdate');
+    if (nextProps.person !== this.state.person) {
+      return true;
+    } else {
+      return false;
+    }
+
+  }
+
+  deletepersonHandler = (personindex) => {
+    // const persons = this.state.person;
+    const persons = [...this.state.person]
+    persons.splice(personindex, 1);
     this.setState({
-      person:persons
+      person: persons
     });
   }
 
-  toggleHandler=()=>{
+  namechangedHandler = (event, id) => {
+    const personindex = this.state.person.findIndex(p => {
+      return p.id === id;
+    });
+    const person = { ...this.state.person[personindex] };
+    person.name = event.target.value
+    const persons = [...this.state.person];
+    persons[personindex] = person;
 
-    const change =this.state.showperson;
+
     this.setState({
-      showperson : !change
-});
+      person: persons, changedCounter: this.state.changeCounter + 1
+    });
   }
- 
-  render(){
 
-    // const style={
-    //   backgroundColor: 'green',
-    //   color: 'white',
-    //   font:'inherit',
-    //   padding:'8px',
-    //   cursor:'pointer',
-    //   border:'1px solid blue',
-    //   ':hover':{
-    //     backgroundColor: 'lightgreen',
-    //     color:'black'
-    //   }
+  toggleHandler = () => {
+
+    const change = this.state.showperson;
+    this.setState({
+      showperson: !change
+    });
+  }
 
 
-    // };
+  loginHandler = () => {
+    this.setState({ authenticated: true });
+  };
 
+  render() {
     let person = null;
-    if(this.state.showperson){
-      person=(
+    if (this.state.showperson) {
+      person = (
         <div>
           <Persons
-           persons={this.state.person}
-           clicked={this.deletepersonHandler}
-           changed={this.namechangedHandler}/>
+            persons={this.state.person}
+            clicked={this.deletepersonHandler}
+            changed={this.namechangedHandler}
+            isAuthenticated={this.state.authenticated} />
 
-        
+
 
         </div>
 
@@ -84,19 +109,25 @@ namechangedHandler = (event,id)=>{
 
 
     }
-return(
-      
-     <div className="App">
-       
-        <Cockpit  
-        persons={this.state.person}
-        showpersons={this.state.showperson}
-        clicked={this.toggleHandler}/>
-       {person}
+    return (
 
-       </div>
-    
+      <Aux>
+
+
+        <button onClick={() => { this.setState({ showcockpit: false }) }}>Remove cockpit</button>
+        <AuthContext.Provider value={{authenticated:this.state.authenticated,login:this.loginHandler}}>
+          {this.state.showcockpit ? (<Cockpit
+            // persons={this.state.person}
+            personslength={this.state.person.length}
+            showpersons={this.state.showperson}
+            clicked={this.toggleHandler}
+             />) : null}
+          {person}
+        </AuthContext.Provider>
+
+      </Aux>
+
     );
   }
 }
-export default App;
+export default withClass(App, classes.App);
